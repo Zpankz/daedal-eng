@@ -1,131 +1,140 @@
-# imagen
+# gurim (그림)
 
-Tiny Rust CLI for OpenAI **`gpt-image-2`** image generation.
-Single static binary, no Python, no Node.js.
+OpenAI **`gpt-image-2`** 모델로 이미지를 뚝딱 만드는 작은 Rust CLI.
+단일 정적 바이너리, Python·Node.js 불필요.
 
 [![Rust](https://img.shields.io/badge/Rust-stable-orange)](https://rust-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
-## Why
+## 왜?
 
-Most OpenAI image clients are heavyweight Node.js / Python SDKs.
-This is a **single ~2.3 MB static binary** that does one thing: send a prompt
-to OpenAI's official `/v1/images/generations` endpoint with `gpt-image-2`
-hardcoded, decode the base64 PNG, write the file.
+기존 OpenAI 이미지 클라이언트는 대부분 Node.js / Python SDK 로 묵직합니다.
+`gurim` 은 **2.3MB 정적 바이너리** 하나로 딱 한 가지만 합니다 —
+프롬프트를 OpenAI 공식 `/v1/images/generations` 엔드포인트에 보내고,
+base64 PNG 를 디코드해서 파일로 저장.
 
-- No SDK dependency
-- Direct REST call (reqwest + rustls)
-- Cross-platform: Linux, macOS, Windows, Android (Termux)
-- Smart default output paths per environment
+- SDK 의존성 0
+- 공식 REST API 직접 호출 (`reqwest` + `rustls`)
+- Linux · macOS · Windows · Android(Termux) 모두 지원
+- 설정 파일 없음. 환경변수 하나 (`OPENAI_API_KEY`) 만 있으면 끝
 
-## Requirements
+## 준비물
 
-- `OPENAI_API_KEY` environment variable (account with `gpt-image-2` access)
+- Rust stable toolchain (빌드용) — `rustup` 로 설치
+- `OPENAI_API_KEY` 환경변수 — `gpt-image-2` 사용 가능한 계정
 
-## Install
+## 설치
 
-### Option A — Claude Code (one-liner)
-
-Tell Claude Code:
-
-> Install the imagen skill from `github.com/Hostingglobal-Tech/imagen`, build with cargo, drop binary in `~/bin`.
-
-### Option B — cargo install (direct)
+### 방법 1. cargo install (추천)
 
 ```bash
-cargo install --git https://github.com/Hostingglobal-Tech/imagen --locked
+cargo install --git https://github.com/Hostingglobal-Tech/gurim --locked
 ```
 
-### Option C — build from source
+바이너리는 `~/.cargo/bin/gurim` 에 생성됩니다. `PATH` 에 포함돼 있는지 확인하세요.
+
+### 방법 2. 소스 빌드
 
 ```bash
-git clone https://github.com/Hostingglobal-Tech/imagen
-cd imagen
+git clone https://github.com/Hostingglobal-Tech/gurim
+cd gurim
 cargo build --release
-install -m 755 target/release/imagen ~/bin/imagen
+# target/release/gurim 을 PATH 안 아무 곳이나 복사 (예: ~/bin/gurim)
 ```
 
-Set API key (bash):
+### 방법 3. Claude Code 로 설치
+
+[Claude Code](https://www.claude.com/claude-code) 를 쓰고 있으면 이렇게 시켜보세요:
+
+> `github.com/Hostingglobal-Tech/gurim` 에서 gurim CLI 를 설치해줘. cargo 로 빌드하고 PATH 에 넣어줘.
+
+## 설정
+
+OpenAI API 키를 한 번만 셸 rc 파일에 등록:
 
 ```bash
+# bash / zsh
 echo 'export OPENAI_API_KEY="sk-..."' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-## Usage
+```powershell
+# PowerShell
+setx OPENAI_API_KEY "sk-..."
+```
+
+## 사용
 
 ```bash
-imagen "a red cube on white background"
-imagen "a blue cat sitting on moon, oil painting" --quality high
-imagen "korean hanok with cherry blossoms" --size 1024x1536 -o hanok.png
-imagen "3 variants" -n 3 --quality auto
-imagen "for scripts" --quiet -o out.png   # prints only file path
+gurim "흰 배경에 빨간 큐브"
+gurim "유화풍으로 달 위에 앉은 파란 고양이" --quality high
+gurim "벚꽃 핀 한옥 마당" --size 1024x1536 -o hanok.png
+gurim "로고 시안 3가지" -n 3
+gurim "스크립트용" --quiet -o out.png   # stdout 에 파일 경로만 출력
 ```
 
-### Options
+### 옵션
 
-| Flag | Values | Default |
+| Flag | 값 | 기본 |
 |---|---|---|
 | `--size` | `1024x1024` · `1024x1536` · `1536x1024` · `auto` | `1024x1024` |
 | `--quality` | `low` · `medium` · `high` · `auto` | `auto` |
-| `-n` | `1..=10` | `1` |
-| `-o, --out` | any path | see below |
+| `-n` | `1..=10` 장 | `1` |
+| `-o, --out` | 저장 경로 | 아래 기본 경로 표 참조 |
 | `--quiet` | — | off |
 
-### Default Output Paths
+### 기본 저장 경로
 
-If `--out` is not given, the file goes to:
+`--out` 을 생략하면:
 
-| Platform | Path |
+| 플랫폼 | 경로 |
 |---|---|
-| Termux / Android | `/sdcard/DCIM/imagen-<epoch>.png` (auto MediaScan) |
-| WSL | `/mnt/c/Users/<you>/Pictures/imagen/` |
-| Windows | `%USERPROFILE%\Pictures\imagen\` |
-| Linux | `$HOME/Pictures/imagen/` |
-| Override | export `IMAGEN_OUT_DIR=/any/path` |
+| Android (Termux) | `/sdcard/DCIM/gurim-<epoch>.png` (갤러리 자동 등록) |
+| Windows | `%USERPROFILE%\Pictures\gurim\gurim-<epoch>.png` |
+| macOS / Linux | `$HOME/Pictures/gurim/gurim-<epoch>.png` |
+| 직접 지정 | `export GURIM_OUT_DIR=/원하는/경로` |
 
-The output directory is created automatically.
+폴더가 없으면 자동 생성됩니다.
 
-## Examples
+## 예제
 
-Prompt: *"실사풍 한국 전통 한옥 마당에 벚꽃이 만발한 봄날 오후, 따뜻한 햇빛, 기와 지붕 디테일 정교, 고해상도 사진"*
-Size: `1024x1536`, quality: `high`, duration: 106 s, output: 3.2 MB
+프롬프트: *"실사풍 한국 전통 한옥 마당에 벚꽃이 만발한 봄날 오후, 따뜻한 햇빛, 기와 지붕 디테일 정교, 고해상도 사진"*
+크기: `1024x1536` · 품질: `high`
 
-![Hanok with cherry blossoms](examples/hanok-blossom.png)
+![한옥 벚꽃](examples/hanok-blossom.png)
 
-Prompt: *"a futuristic seoul skyline at sunset, photorealistic"*
-Size: `1024x1024`, quality: `low`, duration: ~45 s, output: 1.7 MB
+프롬프트: *"a futuristic seoul skyline at sunset, photorealistic"*
+크기: `1024x1024` · 품질: `low`
 
-![Seoul skyline](examples/seoul-skyline.png)
+![서울 스카이라인](examples/seoul-skyline.png)
 
-## Model
+## 모델
 
-**`gpt-image-2`** is hardcoded. No CLI flag to override.
-If you need a different model, fork and change the `MODEL` constant in `src/main.rs`.
+**`gpt-image-2`** 가 코드에 고정돼 있습니다. CLI 플래그로 바꿀 수 없습니다.
+다른 모델을 쓰려면 fork 해서 `src/main.rs` 의 `MODEL` 상수를 수정하세요.
 
-Pinned variant resolved via `/v1/models`: `gpt-image-2-2026-04-21` (at time of writing).
+## 비용
 
-## Cost
-
-Usage is returned in stderr after each call:
+호출마다 usage 가 stderr 에 출력됩니다:
 
 ```
-[imagen] usage: {"total_tokens":211, ...}
+[gurim] usage: {"total_tokens":211, ...}
 ```
 
-Refer to OpenAI pricing for `gpt-image-2`.
+상세 요금은 [OpenAI pricing](https://openai.com/api/pricing/) 에서 `gpt-image-2` 항목 참조.
 
-## Security
+## 보안
 
-- No API keys in source. Read from `OPENAI_API_KEY` env only.
-- TLS via `rustls` (no OpenSSL).
-- No telemetry, no analytics, no crash reporting.
-- Outbound traffic: `api.openai.com` only.
+- 소스에 API 키 하드코딩 없음. `OPENAI_API_KEY` 환경변수에서만 읽음.
+- TLS 는 `rustls` 사용 (OpenSSL 의존 X).
+- 텔레메트리·분석·에러 리포팅 없음.
+- 외부 통신: `api.openai.com` 하나뿐.
 
-## License
+## 라이선스
 
-MIT — see [LICENSE](LICENSE).
+MIT — [LICENSE](LICENSE) 참조.
 
-## Contributing
+## 기여
 
-Keep the binary small and the code boring. No feature creep, no plugin system.
-One file, one purpose.
+바이너리는 작게, 코드는 지루하게 유지합니다. 기능 과잉·플러그인 시스템 없음.
+한 파일, 한 목적.
