@@ -1,4 +1,4 @@
-//! daedal — OpenAI gpt-image-2 이미지 생성 CLI (단일 Rust 바이너리).
+//! daedal — OpenAI gpt-image-2 image generation CLI (single Rust binary).
 //! POST /v1/images/generations → base64 PNG → file.
 use anyhow::{Context, Result, bail};
 use base64::{Engine, engine::general_purpose::STANDARD};
@@ -10,7 +10,7 @@ const MODEL: &str = "gpt-image-2";
 const ENDPOINT: &str = "https://api.openai.com/v1/images/generations";
 
 #[derive(Parser, Debug)]
-#[command(version, about = "daedal — OpenAI gpt-image-2 이미지 생성 CLI")]
+#[command(version, about = "daedal — OpenAI gpt-image-2 image generation CLI")]
 struct Args {
     /// Prompt text
     prompt: String,
