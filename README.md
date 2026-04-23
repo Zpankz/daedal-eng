@@ -1,188 +1,188 @@
 # daedal
 
-OpenAI **`gpt-image-2`** 로 이미지를 만드는 작은 Rust CLI.
-단일 정적 바이너리. Python·Node.js 불필요.
+Small Rust CLI for generating images with OpenAI **`gpt-image-2`**.
+Single static binary. No Python or Node.js required.
 
 [![Rust](https://img.shields.io/badge/Rust-stable-orange)](https://rust-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
-![한옥 벚꽃](examples/hanok-blossom.png)
+![Hanok courtyard in blossom](examples/hanok-blossom.png)
 
-## 이름
+## Name
 
-그리스 신화 장인 **다이달로스(Daedalus)** — 미궁 설계자·밀랍 날개 제작자.
-영어 사전에도 `daedal` = "정교하게 만든, 교묘한" 이라는 형용사로 남아있습니다.
+Named after **Daedalus**, the craftsman of Greek mythology — designer of the labyrinth and maker of wax wings.
+The English adjective `daedal` also means “skillfully made” or “intricate.”
 
 ---
 
-## 🚀 가장 쉬운 설치 — Claude Code 한 방에
+## 🚀 Easiest install — one Claude Code prompt
 
-Rust·cargo·환경변수 아무것도 몰라도 됩니다. [Claude Code](https://www.claude.com/claude-code) 에 **아래 한 문단을 그대로 복사·붙여넣기** 하세요:
+You do not need to know Rust, cargo, or shell environment variables. In [Claude Code](https://www.claude.com/claude-code), **copy and paste the paragraph below exactly as written**:
 
-> daedal CLI 를 설치해줘. 저장소는 `https://github.com/Hostingglobal-Tech/daedal` 야.
+> Please install the daedal CLI. The repository is `https://github.com/Hostingglobal-Tech/daedal`.
 >
-> 자동으로 아래 순서대로 해줘 (중간에 물어보지 말고):
-> 1. Rust 툴체인(`rustup`) 이 없으면 설치.
-> 2. `cargo install --git https://github.com/Hostingglobal-Tech/daedal --locked` 실행.
-> 3. `~/.cargo/bin` 이 `PATH` 에 없으면 `~/.bashrc` (또는 `~/.zshrc`) 에 추가.
-> 4. OpenAI API 키를 내가 붙여넣을 수 있게 입력 안내. 붙여넣으면 `OPENAI_API_KEY` 환경변수를 rc 파일에 추가.
-> 5. `daedal "a small red apple on white table" --quality low` 로 한 장 생성해서 정상 동작 확인.
-> 6. 설치된 바이너리 경로와 테스트 이미지 경로를 알려줘.
+> Please do the following automatically in this order, without asking me questions:
+> 1. Install the Rust toolchain (`rustup`) if it is missing.
+> 2. Run `cargo install --git https://github.com/Hostingglobal-Tech/daedal --locked`.
+> 3. If `~/.cargo/bin` is not in `PATH`, add it to `~/.bashrc` (or `~/.zshrc`).
+> 4. Prompt me to paste my OpenAI API key, then add `OPENAI_API_KEY` to the shell rc file.
+> 5. Generate one image with `daedal "a small red apple on white table" --quality low` to verify it works.
+> 6. Tell me the installed binary path and the test image path.
 
-Claude Code 가 알아서 다 처리합니다. OpenAI API 키만 미리 준비하세요 ([발급 페이지](https://platform.openai.com/api-keys)).
+Claude Code handles the full setup. Just have your OpenAI API key ready in advance ([create one here](https://platform.openai.com/api-keys)).
 
-### Claude Code 가 없다면 — 원라이너 설치 스크립트
+### No Claude Code? Use the one-line install script instead
 
-Linux / macOS / Termux 터미널에서:
+In a Linux / macOS / Termux terminal:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Hostingglobal-Tech/daedal/main/install.sh | bash
 ```
 
-자동으로 처리:
-- Rust 툴체인 없으면 `rustup` 설치
-- `cargo install` 로 daedal 빌드
-- `~/.cargo/bin` 이 `PATH` 에 없으면 rc 파일에 추가
-- OpenAI API 키 입력받아 rc 파일에 저장
-- 샘플 이미지 1장 생성해 정상 동작 확인
+What it does automatically:
+- Installs the Rust toolchain with `rustup` if needed
+- Builds and installs daedal with `cargo install`
+- Adds `~/.cargo/bin` to your shell rc file if it is missing from `PATH`
+- Prompts for your OpenAI API key and saves it to the rc file
+- Generates one sample image to verify everything works
 
 ---
 
-## 사용
+## Usage
 
 ```bash
-daedal "흰 배경에 빨간 큐브"
-daedal "유화풍으로 달 위에 앉은 파란 고양이" --quality high
-daedal "벚꽃 핀 한옥 마당" --size 1024x1536 -o hanok.png
-daedal "로고 시안 3가지" -n 3
-daedal "스크립트용" --quiet -o out.png   # stdout 에 파일 경로만 출력
+daedal "red cube on white background"
+daedal "blue cat sitting on the moon, oil painting style" --quality high
+daedal "hanok courtyard with cherry blossoms" --size 1024x1536 -o hanok.png
+daedal "3 logo concepts" -n 3
+daedal "for scripting" --quiet -o out.png   # print only the file path to stdout
 ```
 
-### 옵션
+### Options
 
-| Flag | 값 | 기본 |
+| Flag | Value | Default |
 |---|---|---|
 | `--size` | `1024x1024` · `1024x1536` · `1536x1024` · `auto` | `1024x1024` |
 | `--quality` | `low` · `medium` · `high` · `auto` | `auto` |
-| `-n` | 1..=10 장 | `1` |
-| `-o, --out` | 저장 경로 | 아래 표 참조 |
+| `-n` | 1..=10 images | `1` |
+| `-o, --out` | Save path | See the table below |
 | `--quiet` | — | off |
 
-### 기본 저장 경로
+### Default output location
 
-`--out` 을 생략하면:
+If you omit `--out`:
 
-| 플랫폼 | 경로 |
+| Platform | Path |
 |---|---|
-| Android (Termux) | `/sdcard/DCIM/daedal-<epoch>.png` (갤러리 자동 등록) |
+| Android (Termux) | `/sdcard/DCIM/daedal-<epoch>.png` (auto-indexed into the gallery) |
 | Windows | `%USERPROFILE%\Pictures\daedal\` |
 | macOS / Linux | `$HOME/Pictures/daedal/` |
-| 직접 지정 | `export DAEDAL_OUT_DIR=/원하는/경로` |
+| Custom via env var | `export DAEDAL_OUT_DIR=/your/preferred/path` |
 
-폴더가 없으면 자동 생성됩니다.
+The directory is created automatically if it does not exist.
 
-### 예제
+### Examples
 
-프롬프트: *"a futuristic seoul skyline at sunset, photorealistic"* · `1024x1024` · `low` quality
+Prompt: *"a futuristic Seoul skyline at sunset, photorealistic"* · `1024x1024` · `low` quality
 
-![서울 스카이라인](examples/seoul-skyline.png)
+![Seoul skyline](examples/seoul-skyline.png)
 
-프롬프트: *"실사풍 한국 전통 한옥 마당에 벚꽃이 만발한 봄날 오후, 따뜻한 햇빛, 기와 지붕 디테일 정교, 고해상도 사진"* · `1024x1536` · `high` quality
+Prompt: *"photorealistic traditional Korean hanok courtyard in spring, cherry blossoms in full bloom, warm afternoon sunlight, detailed tiled roof, high-resolution photo"* · `1024x1536` · `high` quality
 
-![한옥 벚꽃](examples/hanok-blossom.png)
+![Hanok courtyard in blossom](examples/hanok-blossom.png)
 
-### 한글 텍스트 렌더링
+### Korean text rendering
 
-`gpt-image-2` 부터 **한글 간판·타이포그래피**가 제대로 나옵니다. 이전 세대 (DALL-E 3 · gpt-image-1) 에서는 한글이 **깨진 자소**나 **유사 한자** 모양으로 나왔는데, 2세대부터 명조·고딕·붓글씨체·캘리그라피까지 자소 정확도가 크게 올라갔습니다.
+Starting with `gpt-image-2`, **Korean signage and typography** render much more reliably. Earlier generations (DALL-E 3 and `gpt-image-1`) often produced broken syllables or incorrect Hanja-like glyphs, while the newer generation is much better at serif, sans-serif, brush, and calligraphic Korean text.
 
-쓸 만한 예:
+Useful examples:
 ```bash
-daedal "한국 전통 한정식 간판 '맛집 1998' 붓글씨체, 나무 판에 음각, 낮은 조명"
-daedal "서울 지하철 안내판 '강남역 1번 출구 — 삼성역 방향', 파란 배경에 흰 글씨"
-daedal "봄 꽃 축제 포스터 '4월 벚꽃 축제', 한글 캘리그라피 + 날짜 '2026.04.10-20'" --size 1024x1536
+daedal "Korean traditional restaurant sign reading 'Matjip 1998', brush lettering, engraved wood plaque, low lighting"
+daedal "Seoul subway sign reading 'Gangnam Station Exit 1 -> toward Samseong Station', white text on blue background"
+daedal "Spring flower festival poster reading 'April Cherry Blossom Festival', Korean-style calligraphy plus date '2026.04.10-20'" --size 1024x1536
 ```
 
-한글이 필요한 포스터·간판·UI 시안을 뽑을 때 유용합니다.
+This is especially useful for posters, storefront signs, and UI mockups that need Korean text.
 
 ---
 
-## 수동 설치 (고급 사용자)
+## Manual installation (advanced users)
 
-Claude Code 없이 직접 설치하려면:
+To install it manually without Claude Code:
 
 ### A. cargo install
 
 ```bash
-# 1) Rust 설치 (이미 있으면 건너뛰기)
+# 1) Install Rust (skip if already installed)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
-# 2) daedal 빌드 · 설치 (~/.cargo/bin/daedal 에 생성)
+# 2) Build and install daedal (creates ~/.cargo/bin/daedal)
 cargo install --git https://github.com/Hostingglobal-Tech/daedal --locked
 
-# 3) OpenAI API 키 등록
+# 3) Set your OpenAI API key
 echo 'export OPENAI_API_KEY="sk-..."' >> ~/.bashrc
 source ~/.bashrc
 
-# 4) 테스트
+# 4) Test it
 daedal "a cute red panda" --quality low
 ```
 
-### B. 소스 빌드
+### B. Build from source
 
 ```bash
 git clone https://github.com/Hostingglobal-Tech/daedal
 cd daedal
 cargo build --release
-cp target/release/daedal ~/.local/bin/   # 또는 PATH 안 아무 곳
+cp target/release/daedal ~/.local/bin/   # or any directory already in PATH
 ```
 
 ### Windows PowerShell
 
 ```powershell
-# Rust 설치: https://rustup.rs 에서 rustup-init.exe 다운로드 후 실행
+# Install Rust: download and run rustup-init.exe from https://rustup.rs
 cargo install --git https://github.com/Hostingglobal-Tech/daedal --locked
 setx OPENAI_API_KEY "sk-..."
-# 새 PowerShell 창을 열어야 setx 값이 적용됨
+# Open a new PowerShell window for the setx value to take effect
 daedal "a red cube on white"
 ```
 
 ---
 
-## 요구 사항
+## Requirements
 
-- Rust stable toolchain (빌드용)
-- `OPENAI_API_KEY` 환경변수 — `gpt-image-2` 사용 가능한 OpenAI 계정
+- Rust stable toolchain (for building)
+- `OPENAI_API_KEY` environment variable — an OpenAI account with access to `gpt-image-2`
 
 ---
 
-## 모델
+## Model
 
-**`gpt-image-2`** 가 코드에 고정돼 있습니다. CLI 플래그로 바꿀 수 없습니다.
-다른 모델을 쓰려면 fork 후 `src/main.rs` 의 `MODEL` 상수를 수정하세요.
+**`gpt-image-2`** is hard-coded in the source. There is no CLI flag to change it.
+If you want a different model, fork the repo and edit the `MODEL` constant in `src/main.rs`.
 
-## 비용
+## Cost
 
-호출마다 usage 가 stderr 에 출력됩니다:
+Each request prints usage information to stderr:
 
 ```
 [daedal] usage: {"total_tokens":211, ...}
 ```
 
-상세 요금은 [OpenAI pricing](https://openai.com/api/pricing/) 에서 `gpt-image-2` 항목 참조.
+For detailed pricing, see the `gpt-image-2` entry on [OpenAI pricing](https://openai.com/api/pricing/).
 
-## 보안
+## Security
 
-- 소스에 API 키 하드코딩 없음. `OPENAI_API_KEY` 환경변수에서만 읽음.
-- TLS 는 `rustls` 사용 (OpenSSL 의존 X).
-- 텔레메트리·분석·에러 리포팅 없음.
-- 외부 통신: `api.openai.com` 하나뿐.
+- No API keys are hard-coded in the source. The program only reads `OPENAI_API_KEY`.
+- TLS uses `rustls` (no OpenSSL dependency).
+- No telemetry, analytics, or error reporting.
+- Only one external network destination: `api.openai.com`.
 
-## 라이선스
+## License
 
-MIT — [LICENSE](LICENSE) 참조.
+MIT — see [LICENSE](LICENSE).
 
-## 기여
+## Contribution
 
-바이너리는 작게, 코드는 지루하게. 기능 과잉·플러그인 시스템 없음.
-한 파일, 한 목적.
+Keep the binary small and the code boring. No feature bloat and no plugin system.
+One file, one purpose.
