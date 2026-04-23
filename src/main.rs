@@ -1,4 +1,4 @@
-//! gurim — OpenAI gpt-image-2 이미지 생성 CLI (단일 Rust 바이너리).
+//! daedal — OpenAI gpt-image-2 이미지 생성 CLI (단일 Rust 바이너리).
 //! POST /v1/images/generations → base64 PNG → file.
 use anyhow::{Context, Result, bail};
 use base64::{Engine, engine::general_purpose::STANDARD};
@@ -10,11 +10,11 @@ const MODEL: &str = "gpt-image-2";
 const ENDPOINT: &str = "https://api.openai.com/v1/images/generations";
 
 #[derive(Parser, Debug)]
-#[command(version, about = "gurim — OpenAI gpt-image-2 이미지 생성 CLI")]
+#[command(version, about = "daedal — OpenAI gpt-image-2 이미지 생성 CLI")]
 struct Args {
     /// Prompt text
     prompt: String,
-    /// Output path (default: ./gurim-<epoch>.png)
+    /// Output path (default: ./daedal-<epoch>.png)
     #[arg(long, short = 'o')]
     out: Option<PathBuf>,
     /// Size: 1024x1024 | 1024x1536 | 1536x1024 | auto
@@ -53,9 +53,9 @@ struct ImgData {
 }
 
 /// Default output directory per platform.
-/// Priority: GURIM_OUT_DIR env > termux sdcard > Windows Pictures > $HOME/Pictures/gurim > CWD.
+/// Priority: DAEDAL_OUT_DIR env > termux sdcard > Windows Pictures > $HOME/Pictures/daedal > CWD.
 fn default_out_dir(is_termux: bool) -> PathBuf {
-    if let Ok(d) = std::env::var("GURIM_OUT_DIR") {
+    if let Ok(d) = std::env::var("DAEDAL_OUT_DIR") {
         if !d.is_empty() { return PathBuf::from(d); }
     }
     if is_termux {
@@ -63,11 +63,11 @@ fn default_out_dir(is_termux: bool) -> PathBuf {
     }
     if cfg!(windows) {
         if let Ok(p) = std::env::var("USERPROFILE") {
-            return PathBuf::from(p).join("Pictures").join("gurim");
+            return PathBuf::from(p).join("Pictures").join("daedal");
         }
     }
     if let Ok(h) = std::env::var("HOME") {
-        return PathBuf::from(h).join("Pictures").join("gurim");
+        return PathBuf::from(h).join("Pictures").join("daedal");
     }
     PathBuf::from(".")
 }
@@ -99,7 +99,7 @@ async fn main() -> Result<()> {
         .build()?;
 
     if !args.quiet {
-        eprintln!("[gurim] model={} size={} quality={} n={}", MODEL, args.size, args.quality, args.n);
+        eprintln!("[daedal] model={} size={} quality={} n={}", MODEL, args.size, args.quality, args.n);
     }
 
     let r = client.post(ENDPOINT)
@@ -125,7 +125,7 @@ async fn main() -> Result<()> {
             .duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
         let dir = default_out_dir(is_termux);
         let _ = std::fs::create_dir_all(&dir);
-        dir.join(format!("gurim-{}.png", ts))
+        dir.join(format!("daedal-{}.png", ts))
     });
 
     for (i, d) in parsed.data.iter().enumerate() {
@@ -133,7 +133,7 @@ async fn main() -> Result<()> {
         let path = if parsed.data.len() == 1 {
             base.clone()
         } else {
-            let stem = base.file_stem().and_then(|s| s.to_str()).unwrap_or("gurim");
+            let stem = base.file_stem().and_then(|s| s.to_str()).unwrap_or("daedal");
             let ext = base.extension().and_then(|s| s.to_str()).unwrap_or("png");
             base.with_file_name(format!("{}-{}.{}", stem, i, ext))
         };
@@ -151,13 +151,13 @@ async fn main() -> Result<()> {
         if args.quiet {
             println!("{}", path.display());
         } else {
-            eprintln!("[gurim] saved {} ({} bytes)", path.display(), png.len());
+            eprintln!("[daedal] saved {} ({} bytes)", path.display(), png.len());
         }
     }
 
     if !args.quiet {
         if let Some(u) = parsed.usage {
-            eprintln!("[gurim] usage: {}", u);
+            eprintln!("[daedal] usage: {}", u);
         }
     }
     Ok(())
